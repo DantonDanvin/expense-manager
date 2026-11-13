@@ -1,0 +1,23 @@
+<!doctype html><meta charset="utf-8"><title>Seeding demo data…</title>
+<script>
+// Dev helper: fills the app with sample data, then opens it. Safe to delete.
+const qs = new URLSearchParams(location.search);
+if (!qs.has('force') && localStorage.getItem('kharcha:data') && !confirm('Replace the data in this browser with demo data?')) { location.replace('/'); throw new Error('cancelled'); }
+const cats = ['food','groceries','transport','shopping','bills','rent','health','fun','travel','education','gifts'];
+const notes = {food:['Lunch with team','Swiggy dinner','Chai & snacks','Pizza night'],groceries:['BigBasket','Weekly veggies','DMart run'],transport:['Uber to office','Metro card','Petrol'],shopping:['Myntra order','New headphones','Amazon'],bills:['Electricity bill','Jio recharge','Internet'],rent:['Flat rent','Maintenance'],health:['Pharmacy','Gym membership'],fun:['Movie tickets','Netflix','Concert'],travel:['Train to Surat','Flight booking'],education:['Udemy course','Books'],gifts:['Birthday gift','Diwali sweets']};
+const amt = {food:[100,600],groceries:[200,900],transport:[50,400],shopping:[300,2500],bills:[200,900],rent:[12500,12500],health:[150,900],fun:[150,700],travel:[400,2500],education:[200,1200],gifts:[300,1500]};
+const r=(a,b)=>Math.round(a+Math.random()*(b-a)); const pad=n=>String(n).padStart(2,'0');
+const tx=[]; const now=new Date();
+for(let mo=5; mo>=0; mo--){ const d=new Date(now.getFullYear(), now.getMonth()-mo, 1); const y=d.getFullYear(), m=d.getMonth()+1; const days= mo===0? now.getDate() : new Date(y,m,0).getDate();
+  tx.push({id:`sal-${y}${m}`,type:'income',amount:50000,category:'salary',date:`${y}-${pad(m)}-01`,note:'Monthly salary',method:'Net Banking',updatedAt:Date.now(),createdAt:Date.now()});
+  tx.push({id:`rent-${y}${m}`,type:'expense',amount:12500,category:'rent',date:`${y}-${pad(m)}-03`,note:'Flat rent',method:'UPI',updatedAt:Date.now(),createdAt:Date.now()});
+  for(let i=0;i<r(14,20);i++){ const c=cats[r(0,cats.length-1)]; if(c==='rent')continue; const n=notes[c]; const [lo,hi]=amt[c];
+    tx.push({id:`${y}${m}-${i}-${Math.random().toString(36).slice(2,8)}`,type:'expense',amount:r(lo,hi),category:c,date:`${y}-${pad(m)}-${pad(r(1,days))}`,note:n[r(0,n.length-1)],method:['UPI','UPI','Card','Cash'][r(0,3)],updatedAt:Date.now(),createdAt:Date.now()});
+  }
+}
+const plan={rent:25,groceries:7,food:8,transport:5,bills:4,health:4,travel:4,gifts:6,shopping:4,fun:3,education:2,savings:13,investments:15}; const base=50000; const budgets={}; let tot=0; for(const [k,v] of Object.entries(plan)){budgets[k]=Math.round(base*v/100/10)*10; tot+=budgets[k];} budgets._total=tot;
+const data={version:1,transactions:tx,categories:[],budgets,budgetsUpdatedAt:Date.now(),budgetPlan:{base,allocations:plan,updatedAt:Date.now()},settings:{currency:'INR',locale:'en-IN',updatedAt:0}};
+localStorage.setItem('kharcha:data', JSON.stringify(data));
+localStorage.setItem('kharcha:prefs', JSON.stringify({theme: new URLSearchParams(location.search).get('theme')||'light', clientId:'', month:`${now.getFullYear()}-${pad(now.getMonth()+1)}`, lastMethod:'UPI', txScope:'month'}));
+location.replace('/' + (qs.has('open') ? '?open=' + qs.get('open') : '') + (location.hash||'#/dashboard'));
+</script>
